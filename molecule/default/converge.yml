@@ -1,0 +1,29 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: "Import role storage"
+      ansible.builtin.import_role:
+        name: storage
+      tags: storage
+
+    - name: "Import role apt_repos"
+      ansible.builtin.import_role:
+        name: apt_repos
+      tags: apt_repos
+
+    - name: "Import role nag_screen"
+      ansible.builtin.import_role:
+        name: nag_screen
+      tags: nag_screen
+
+    - name: "Import role accounts"
+      ansible.builtin.import_role:
+        name: accounts
+      tags: accounts
+
+    - name: "Import ssh accounts"
+      ansible.builtin.import_role:
+        name: ssh
+      tags: ssh

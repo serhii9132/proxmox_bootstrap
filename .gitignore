@@ -1,0 +1,5 @@
+*.tar.gz
+.ansible
+.vscode
+logs
+group_vars

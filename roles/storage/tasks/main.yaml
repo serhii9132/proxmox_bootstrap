@@ -1,0 +1,42 @@
+---
+- name: Create data partition
+  community.general.lvol:
+    vg: "{{ __storage_vg_name }}"
+    lv: "{{ __storage_lv_name }}"
+    size: +100%FREE
+
+- name: Format the data partition as an ext4 filesystem
+  community.general.filesystem:
+    dev: "/dev/{{ __storage_vg_name }}/{{ __storage_lv_name }}"
+    fstype: ext4
+    state: present
+
+- name: Disable old storage
+  block:
+    - name: Get current status
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          pvesm status | awk '$1 == "{{ __storage_id }}" {print $3}'
+      args:
+        executable: /bin/bash
+      register: __storage_status
+      changed_when: false
+
+    - name: Disable storage
+      ansible.builtin.command:
+        cmd: pvesm set {{ __storage_id }} --disable 1
+      changed_when: "'active' in __storage_status.stdout"
+
+- name: Mount the data partition to /var/lib/vz
+  ansible.posix.mount:
+    path: /var/lib/vz
+    src: "/dev/{{ __storage_vg_name }}/{{ __storage_lv_name }}"
+    fstype: ext4
+    state: mounted
+    opts: defaults
+
+- name: Enable new storage
+  ansible.builtin.command:
+    cmd: pvesm set {{ __storage_id }} --disable 0
+  changed_when: "'disabled' in __storage_status.stdout"

@@ -1,0 +1,15 @@
+---
+- name: Find repository files
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d/
+    file_type: file
+    use_regex: true
+    patterns: "{{ __apt_repos_name_patterns }}"
+  register: __apt_repos_to_delete
+
+- name: Remove found repository files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ __apt_repos_to_delete.files }}"
+  notify: Refresh package cache

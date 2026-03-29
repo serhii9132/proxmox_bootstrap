@@ -1,0 +1,5 @@
+---
+- name: Run pve-nag-remover
+  ansible.builtin.command: "bash {{ __nag_screen_script_path }}/pve-nag-remover"
+  register: __nag_screen_remover_result
+  changed_when: "'Nag screen disabled' in __nag_screen_remover_result.stdout"

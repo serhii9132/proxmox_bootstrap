@@ -1,0 +1,3 @@
+__apt_repos_name_patterns:
+  - "pve-enterprise*"
+  - "ceph*"
