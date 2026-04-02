@@ -36,7 +36,24 @@
     state: mounted
     opts: defaults
 
-- name: Enable new storage
-  ansible.builtin.command:
-    cmd: pvesm set {{ __storage_id }} --disable 0
-  changed_when: "'disabled' in __storage_status.stdout"
+- name: Configure new storage
+  block:
+    - name: Update storage status
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          pvesm status | awk '$1 == "{{ __storage_id }}" {print $3}'
+      args:
+        executable: /bin/bash
+      register: __fresh_storage_status
+      changed_when: false
+
+    - name: Enable new storage
+      ansible.builtin.command:
+        cmd: pvesm set {{ __storage_id }} --disable 0
+      changed_when: "'disabled' in __fresh_storage_status.stdout"
+
+    - name: Update storage configuration
+      ansible.builtin.command:
+        cmd: pvesm set {{ __storage_id }} --content snippets,iso,backup,images
+      changed_when: true
